@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dragon Bowl Noodles | That's some heat</title>
+    <link rel="icon" href="logo.png">
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --red: #C41E3A;
+            --orange: #FF4500;
+            --dark-red: #8B0000;
+            --black: #0a0a0a;
+            --light-gold: #FFD700;
+            --smoke: rgba(255, 255, 255, 0.08);
+            --fire-glow: rgba(196, 30, 58, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--black);
+            color: var(--gold);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Splash Screen */
+        #splash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, var(--dark-red) 0%, var(--black) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: transform 1s cubic-bezier(0.77, 0, 0.175, 1), opacity 1s ease;
+        }
+
+        #splash.hidden {
+            transform: translateY(-100%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .splash-logo {
+            width: 200px;
+            height: 200px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 20px var(--gold));
+            animation: pulse 3s infinite ease-in-out;
+        }
+
+        .splash-title {
+            font-size: 4rem;
+            font-weight: 900;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            background: linear-gradient(to bottom, var(--light-gold), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .splash-slogan {
+            font-size: 1.5rem;
+            color: var(--red);
+            font-style: italic;
+            letter-spacing: 3px;
+            margin-bottom: 40px;
+            opacity: 0;
+            animation: fadeIn 1.5s forwards 0.5s;
+        }
+
+        .enter-btn {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            background: transparent;
+            color: var(--gold);
+            border: 2px solid var(--gold);
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .enter-btn:hover {
+            background: var(--gold);
+            color: var(--black);
+            box-shadow: 0 0 30px var(--gold);
+        }
+
+        /* Main Content */
+        #main-content {
+            opacity: 0;
+            transition: opacity 1s ease 0.5s;
+            padding-top: 100px;
+        }
+
+        #main-content.visible {
+            opacity: 1;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 20px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .nav-links {
+            margin-top: 15px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .nav-links a {
+            color: var(--gold);
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--light-gold);
+            text-shadow: 0 0 10px var(--gold);
+            border-bottom-color: var(--gold);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 2px;
+        }
+
+        .header-slogan {
+            font-size: 0.8rem;
+            color: var(--red);
+            letter-spacing: 1px;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 100px 20px 60px;
+        }
+
+        .section {
+            display: none;
+            margin-bottom: 60px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease-out;
+        }
+
+        .section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Slogan Section Specifics */
+        .slogan-page {
+            height: 60vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .slogan-logo {
+            width: 180px;
+            height: auto;
+            margin-bottom: 30px;
+            filter: drop-shadow(0 0 15px var(--gold));
+        }
+
+        .slogan-text {
+            font-size: 3rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 8px;
+            color: var(--red);
+            text-shadow: 0 0 20px rgba(196, 30, 58, 0.6);
+            animation: flicker 4s infinite alternate;
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; transform: scale(1.02); }
+        }
+
+        /* Video & Poster Specifics */
+        .media-container {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px solid var(--gold);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.1);
+            position: relative;
+            background: #000;
+        }
+
+        .video-wrapper {
+            aspect-ratio: 16 / 9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .poster-wrapper {
+            height: 80vh;
+            width: 100%;
+        }
+
+        .placeholder-text {
+            color: #555;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Signature Dish Frame */
+        .menu-item.signature {
+            border: 2px solid var(--gold);
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(139, 0, 0, 0.1) 100%);
+            position: relative;
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.3);
+            transform: scale(1.02);
+            z-index: 2;
+        }
+
+        .menu-item.signature::before {
+            content: 'SIGNATURE';
+            position: absolute;
+            top: 12px;
+            right: -35px;
+            background: var(--red);
+            color: white;
+            padding: 5px 45px;
+            font-size: 0.7rem;
+            font-weight: 900;
+            transform: rotate(45deg);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            z-index: 10;
+            letter-spacing: 1px;
+        }
+
+        .menu-item.signature::after {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border: 1px solid var(--light-gold);
+            border-radius: 12px;
+            pointer-events: none;
+            opacity: 0.5;
+            animation: pulse-border 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse-border {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.01); }
+        }
+
+        /* Results Table */
+        .results-container {
+            width: 100%;
+            overflow-x: auto;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            color: #ccc;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 15px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+        }
+
+        th {
+            color: var(--gold);
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        tr:hover td {
+            background: rgba(212, 175, 55, 0.05);
+            color: #fff;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            color: var(--gold);
+            margin-bottom: 30px;
+            text-align: center;
+            text-transform: uppercase;
+            position: relative;
+        }
+
+        h2::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 3px;
+            background: var(--red);
+            margin: 15px auto;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .menu-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            padding: 30px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--gold);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .menu-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .menu-name {
+            font-weight: bold;
+            color: var(--gold);
+            font-size: 1.2rem;
+        }
+
+        .menu-price {
+            color: var(--light-gold);
+        }
+
+        .menu-desc {
+            font-size: 0.9rem;
+            color: #aaa;
+            line-height: 1.6;
+        }
+
+        /* Alive Elements */
+        .steam {
+            position: absolute;
+            height: 100px;
+            width: 100px;
+            background: var(--smoke);
+            filter: blur(20px);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: -1;
+            animation: steamRise 8s infinite ease-in-out;
+        }
+
+        @keyframes steamRise {
+            0% { transform: translateY(100vh) scale(1); opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { transform: translateY(-100px) scale(3); opacity: 0; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 20px var(--gold)); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 40px var(--red)); }
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        footer {
+            padding: 40px;
+            text-align: center;
+            border-top: 1px solid rgba(212, 175, 55, 0.1);
+            font-size: 0.8rem;
+            color: #555;
+        }
+
+        @media (max-width: 768px) {
+            .splash-title { font-size: 2.5rem; }
+            .splash-slogan { font-size: 1.1rem; }
+            .nav-links { gap: 10px; }
+            .nav-links a { font-size: 0.7rem; padding: 5px; }
+            .slogan-text { font-size: 2rem; }
+            .poster-wrapper { height: 60vh; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Splash Screen -->
+    <div id="splash">
+        <img src="logo.png" alt="Dragon Bowl Noodles Logo" class="splash-logo">
+        <h1 class="splash-title">Dragon Bowl Noodles</h1>
+        <p class="splash-slogan">That's some heat</p>
+        <button class="enter-btn" onclick="enterSite()">Explore Food Truck</button>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content">
+        <header>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <img src="logo.png" alt="Logo" style="height: 50px; width: auto; filter: drop-shadow(0 0 5px var(--gold));">
+                <div style="text-align: left;">
+                    <h1 style="margin: 0; line-height: 1;">DRAGON BOWL NOODLES</h1>
+                    <div class="header-slogan">That's some heat</div>
+                </div>
+            </div>
+            <nav class="nav-links">
+                <a onclick="showSection('menu')" id="nav-menu">Menu</a>
+                <a onclick="showSection('heat')" id="nav-heat">Slogan & Logo</a>
+                <a onclick="showSection('visuals')" id="nav-visuals">Video Ad</a>
+                <a onclick="showSection('poster')" id="nav-poster">Paper Ad</a>
+                <a onclick="showSection('results')" id="nav-results">Results</a>
+            </nav>
+        </header>
+
+        <main>
+            <section id="menu" class="section">
+                <h2>Menu</h2>
+                <div class="menu-grid">
+                    <div class="menu-item signature">
+                        <div class="menu-header">
+                            <span class="menu-name">Dragon Noodles (Signature)</span>
+                            <span class="menu-price">$8.49</span>
+                        </div>
+                        <p class="menu-desc">Best dish ever. Green onion, Beef, and Hand - pulled noodles. Currently selling for $8.49.</p>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-header">
+                            <span class="menu-name">Crimson Fire Lo Mein</span>
+                            <span class="menu-price">$14.99</span>
+                        </div>
+                        <p class="menu-desc">Stir-fried wheat noodles with red chilies, flank steak, and our signature dragon sauce.</p>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-header">
+                            <span class="menu-name">Golden Treasure Bowl</span>
+                            <span class="menu-price">$16.99</span>
+                        </div>
+                        <p class="menu-desc">Premium noodles in a ginseng-infused broth, topped with gold-leaf garnished pork belly.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="heat" class="section">
+                <div class="slogan-page">
+                    <img src="logo.png" alt="Dragon Bowl Logo" class="slogan-logo">
+                    <div class="slogan-text">That's some heat</div>
+                </div>
+            </section>
+
+            <!-- Video Section -->
+            <section id="visuals" class="section">
+                <div class="media-container video-wrapper">
+                    <!-- Source will be updated later -->
+                    <video controls style="width: 100%; height: auto;">
+                        <source src="video.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                <p class="placeholder-text" style="margin-top: 20px;">Hope you enjoy the video!</p>
+            </section>
+
+            <section id="poster" class="section">
+                <div class="media-container poster-wrapper" style="height: auto; min-height: 40vh;">
+                    <img src="ad.png" alt="Campaign Poster" style="width: 100%; height: auto; display: block; object-fit: contain;">
+                </div>
+            </section>
+
+            <section id="results" class="section">
+                <h2>Results Table</h2>
+                <div class="results-container">
+                    <table id="performance-table">
+                        <thead>
+                            <tr>
+                                <th>Year</th>
+                                <th>Ad Budget</th>
+                                <th>Revenue</th>
+                                <th>Price</th>
+                                <th>Sold Amount</th>
+                                <th>Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1</td><td contenteditable="true">-</td><td contenteditable="true">-</td><td contenteditable="true">-</td><td contenteditable="true">-</td><td contenteditable="true">-</td></tr>
+                            <tr><td>2</td><td contenteditable="true">-</td><td contenteditable="true">-</td><td contenteditable="true">-</td><td contenteditable="true">-</td><td contenteditable="true">-</td></tr>
+                            <tr><td>3</td><td contenteditable="true">-</td><td contenteditable="true">-</td><td contenteditable="true">-</td><td contenteditable="true">-</td><td contenteditable="true">-</td></tr>
+                            <tr><td>4</td><td contenteditable="true">-</td><td contenteditable="true">-</td><td contenteditable="true">-</td><td contenteditable="true">-</td><td contenteditable="true">-</td></tr>
+                            <tr><td>5</td><td contenteditable="true">-</td><td contenteditable="true">-</td><td contenteditable="true">-</td><td contenteditable="true">-</td><td contenteditable="true">-</td></tr>
+                            <tr><td>6</td><td contenteditable="true">-</td><td contenteditable="true">-</td><td contenteditable="true">-</td><td contenteditable="true">-</td><td contenteditable="true">-</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div style="text-align: center; margin-top: 30px; display: flex; justify-content: center; gap: 15px;">
+                    <button class="enter-btn" onclick="generateSaveString()" style="font-size: 0.9rem; padding: 10px 25px;">Generate Save String</button>
+                    <button class="enter-btn" onclick="window.print()" style="font-size: 0.9rem; padding: 10px 25px;">Print Report</button>
+                </div>
+                <div id="save-string-container" style="margin-top: 20px; display: none;">
+                    <p style="font-size: 0.8rem; color: #888; margin-bottom: 10px;">Copy this string and provide it to the developer to persist changes:</p>
+                    <textarea id="save-string-box" readonly style="width: 100%; height: 100px; background: rgba(0,0,0,0.5); color: var(--gold); border: 1px solid var(--gold); padding: 10px; font-family: monospace; font-size: 0.8rem; border-radius: 4px;"></textarea>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <img src="logo.png" alt="Dragon Bowl Noodles" style="height: 40px; margin-bottom: 10px; opacity: 0.6;">
+            <p>DRAGON BOWL NOODLES | THAT'S SOME HEAT</p>
+        </footer>
+    </div>
+
+    <!-- Steam Effects -->
+    <div id="steam-container"></div>
+
+    <script>
+        function enterSite() {
+            document.getElementById('splash').classList.add('hidden');
+            document.getElementById('main-content').classList.add('visible');
+            showSection('menu');
+        }
+
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            const element = document.getElementById(id);
+            if (element) {
+                element.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.classList.remove('active');
+            });
+            const activeLink = document.getElementById('nav-' + id);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+        }
+
+        function generateSaveString() {
+            const table = document.getElementById('performance-table');
+            const rows = table.querySelectorAll('tbody tr');
+            const data = [];
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                data.push({
+                    year: cells[0].innerText,
+                    adBudget: cells[1].innerText,
+                    revenue: cells[2].innerText,
+                    price: cells[3].innerText,
+                    soldAmount: cells[4].innerText,
+                    cost: cells[5].innerText
+                });
+            });
+
+            const jsonString = JSON.stringify(data, null, 2);
+            const container = document.getElementById('save-string-container');
+            const box = document.getElementById('save-string-box');
+            
+            box.value = jsonString;
+            container.style.display = 'block';
+            box.select();
+            
+            navigator.clipboard.writeText(jsonString).then(() => {
+                alert('Data string generated and copied to clipboard! Share this with the developer.');
+            });
+        }
+
+        function createSteam() {
+            const container = document.getElementById('steam-container');
+            if (!container) return;
+            
+            const steam = document.createElement('div');
+            steam.className = 'steam';
+            steam.style.left = Math.random() * 100 + 'vw';
+            steam.style.animationDuration = (Math.random() * 4 + 6) + 's';
+            container.appendChild(steam);
+
+            setTimeout(() => {
+                steam.remove();
+            }, 10000);
+        }
+
+        setInterval(createSteam, 2000);
+    </script>
+</body>
+</html>
